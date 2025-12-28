@@ -1,8 +1,13 @@
-# Patrick's Parabox File Format
+# Parabox level `.txt` format
 
-> This file is extracted from the official documentation of Patrick's Parabox, a puzzle game developed by Patrick Traynor. It describes the file format used for saving and loading game levels.
+## Overview
 
-Level files have a simple text-based format. You don't need to read this unless you want to make your own level editor tool, or are just curious! Here is an example level:
+- Plain text, one object per line.
+- Header lines come first; a single line containing `#` ends the header.
+- After `#`, the file is a tree: tab indentation (`\t`) means “child of the previous Block at that depth”.
+- Booleans are written as `0` / `1`.
+
+Example:
 
 ```
 version 4
@@ -21,9 +26,9 @@ Block -1 -1 0 9 9 0.6 0.8 1 1 0 0 0 0 0 0 0
 	Block 5 5 2 5 5 0.9 1 0.7 1 1 1 1 0 0 0 0
 ```
 
-![Level View](level-preview.png)
+![Level Preview](level-preview.png)
 
-## Header
+## Header (lines before `#`)
 
 The header is all lines before "#". "version" is the only required item. Here are all available items, and comments in parentheses:
 
@@ -53,8 +58,8 @@ A block, which has children objects.
     - `possessable` if 1, this block is possessable
     - `playerorder` if player is set, this number is the order in which this player moves, if there are multiple players
     - `fliph` if 1, this block is flipped
-    - `floatinspace` if 1, this block will not actually be at this x,y position. instead, it will have no parent, and will "float in space". this property exists as a hack so that you can make levels with these kinds of blocks, while keeping the level structure in the editor just 1 tree, instead of 2 or more trees.
-    - `specialeffect` magic number used to flag blocks in various situations.
+    - `floatinspace` if 1, this block will not actually be at this x,y position. instead, it will have no parent, and will "float in space". this property exists as a hack so that you can make levels with these kinds of blocks, while keeping the level structure in the editor just 1 tree, instead of 2 or more trees
+    - `specialeffect` magic number used to flag blocks in various situations
 - `Ref x y id exitblock infexit infexitnum infenter infenternum infenterid player posssessable playerorder fliph floatinspace specialeffect`
 A reference to a Block that is defined elsewhere in the file.
     - `id` block this is a reference to
@@ -65,6 +70,18 @@ A reference to a Block that is defined elsewhere in the file.
     - `infenternum` degree of infenter, if that is set
     - `infenterid` which level is infenter, if that is set
 - `Wall x y player possessable playerorder`
-Wall.
+Defines a Wall.
+    - `player` if 1, this wall is a player
+    - `possessable` if 1, this wall is possessable (can become a player)
+    - `playerorder` if player is set, this number is the order in which this player moves, if there are multiple players
 - `Floor x y type`
-Floor. Types are: Button, PlayerButton
+Defines a Floor Tile.
+    - `type` the type of the floor. can be:
+        - `Button` the target floor for any box
+        - `PlayerButton` the target floor for the player
+        - `Portal <sceneName>` transports player to another scene
+        - `Info <text>` (spaces are saved as `_`), displays text when player enters block
+        - `Break` (to be determined)
+        - `FastTravel` transports player to another FastTravel floor, used for hub selection
+        - `Gallery` (possibly useless in custom levels) show gallery
+        - `DemoEnd` (possibly useless in custom levels) show ending animation
