@@ -211,7 +211,8 @@ export function hitTest(block: Block, x: number, y: number): { kind: 'BlockChild
   for (let i = block.children.length - 1; i >= 0; i--) {
     const c = block.children[i]
     if (c.kind === 'Block') {
-      if (x >= c.x && y >= c.y && x < c.x + c.width && y < c.y + c.height) return { kind: 'BlockChild', index: i }
+      // In Parabox, nested blocks occupy 1 cell in their parent regardless of internal size.
+      if (c.x === x && c.y === y) return { kind: 'BlockChild', index: i }
     }
   }
   for (let i = block.children.length - 1; i >= 0; i--) {

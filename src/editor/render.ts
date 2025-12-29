@@ -80,18 +80,21 @@ function drawGrid(ctx: CanvasRenderingContext2D, width: number, height: number, 
 function drawChild(ctx: CanvasRenderingContext2D, obj: Obj, zoom: number, highlight: boolean): void {
   if (obj.kind === 'Block') {
     const rgb = hsvToRgb(obj.hue, obj.sat, obj.val)
+    // Nested blocks occupy a single cell in their parent.
     ctx.fillStyle = rgbCss(rgb, 0.22)
-    ctx.strokeStyle = highlight ? 'rgba(255,255,255,0.8)' : rgbCss(rgb, 0.85)
+    ctx.strokeStyle = highlight ? 'rgba(255,255,255,0.85)' : rgbCss(rgb, 0.85)
     ctx.lineWidth = highlight ? 3 : 2
 
-    ctx.fillRect(obj.x * zoom, obj.y * zoom, obj.width * zoom, obj.height * zoom)
-    ctx.strokeRect(obj.x * zoom + 0.5, obj.y * zoom + 0.5, obj.width * zoom - 1, obj.height * zoom - 1)
+    const px = obj.x * zoom
+    const py = obj.y * zoom
+    ctx.fillRect(px, py, zoom, zoom)
+    ctx.strokeRect(px + 0.5, py + 0.5, zoom - 1, zoom - 1)
 
     // id label
-    ctx.fillStyle = highlight ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.7)'
-    ctx.font = `${Math.max(10, Math.floor(zoom * 0.28))}px system-ui`
+    ctx.fillStyle = highlight ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.75)'
+    ctx.font = `${Math.max(9, Math.floor(zoom * 0.26))}px system-ui`
     ctx.textBaseline = 'top'
-    ctx.fillText(String(obj.id), obj.x * zoom + 4, obj.y * zoom + 3)
+    ctx.fillText(String(obj.id), px + 3, py + 2)
 
     return
   }

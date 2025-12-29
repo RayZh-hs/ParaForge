@@ -32,11 +32,17 @@
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-columns: 360px 1fr;
+  grid-template-columns: 320px 1fr 380px;
 }
 
-.pf-sidebar {
+.pf-left {
   border-right: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 12px;
+  overflow: auto;
+}
+
+.pf-right {
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
   padding: 12px;
   overflow: auto;
 }
@@ -96,6 +102,34 @@
   padding: 8px 10px;
   background: rgba(0, 0, 0, 0.16);
   color: inherit;
+}
+
+.pf-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pf-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pf-label {
+  opacity: 0.72;
+  font-size: 0.86rem;
+}
+
+.pf-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(0, 0, 0, 0.12);
+  user-select: none;
 }
 
 .pf-textarea {
@@ -175,4 +209,38 @@
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
   font-size: 0.9rem;
   opacity: 0.85;
+}
+
+.pf-modalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+}
+
+.pf-modalBackdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.pf-modal {
+  position: relative;
+  width: min(720px, calc(100vw - 32px));
+  max-height: min(70vh, 720px);
+  overflow: auto;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(20, 20, 20, 0.92);
+  padding: 12px;
+}
+
+@media (max-width: 980px) {
+  .pf-main {
+    grid-template-columns: 320px 1fr;
+  }
+  .pf-right {
+    display: none;
+  }
 }

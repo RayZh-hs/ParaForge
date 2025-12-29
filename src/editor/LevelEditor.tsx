@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import type { Block } from '../parabox/types'
 import { parseLevel, serializeLevel } from '../parabox/format'
 import {
   addBlock,
@@ -234,6 +235,14 @@ export function LevelEditor() {
 
   const setTool = (tool: Tool) => setState((s) => ({ ...s, tool, lastError: null }))
 
+  const updateSelectedBlock = (fn: (b: Block) => Block) => {
+    const b = selectedBlock
+    if (!b) return
+    const nextBlock = fn(b)
+    const nextLevel = setBlockAtPath(state.level, state.selectedBlockPath, nextBlock)
+    setState((s) => pushHistory(s, nextLevel))
+  }
+
   const onImport = () => {
     try {
       const level = parseLevel(ioText)
@@ -307,7 +316,7 @@ export function LevelEditor() {
       </header>
 
       <div className="pf-main">
-        <aside className="pf-sidebar">
+        <aside className="pf-left">
           <div className="pf-section">
             <div className="pf-section-title">Selection</div>
             <div className="pf-row">
@@ -375,17 +384,6 @@ export function LevelEditor() {
           </div>
 
           <div className="pf-section">
-            <div className="pf-section-title">Blocks</div>
-            <div className="pf-list">
-              {blockList.map((b) => (
-                <button key={b.id} className={listBtnClass(pathEq(b.path, state.selectedBlockPath))} onClick={() => onPickBlock(b.path)}>
-                  #{b.id}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="pf-section">
             <div className="pf-section-title">Import / Export</div>
             <div className="pf-row pf-wrap">
               <button className="pf-btn" onClick={onImport}>
@@ -412,12 +410,6 @@ export function LevelEditor() {
             </div>
           )}
 
-          {showHelp && (
-            <div className="pf-help">
-              <div className="pf-section-title">Help</div>
-              <pre className="pf-pre">{HELP}</pre>
-            </div>
-          )}
         </aside>
 
         <section className="pf-canvasWrap">
@@ -436,12 +428,178 @@ export function LevelEditor() {
             onWheel={onWheel}
           />
         </section>
+
+        <aside className="pf-right">
+          <div className="pf-section">
+            <div className="pf-section-title">Blocks</div>
+            <div className="pf-list">
+              {blockList.map((b) => (
+                <button key={b.id} className={listBtnClass(pathEq(b.path, state.selectedBlockPath))} onClick={() => onPickBlock(b.path)}>
+                  #{b.id}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="pf-section">
+            <div className="pf-section-title">Selected Block</div>
+            {!selectedBlock ? (
+              <div className="pf-muted">No block selected.</div>
+            ) : (
+              <div className="pf-form">
+                <Field label="id">
+                  <input className="pf-input" value={String(selectedBlock.id)} readOnly />
+                </Field>
+                <div className="pf-row" style={{ gap: 10 }}>
+                  <Field label="width">
+                    <input
+                      className="pf-input"
+                      type="number"
+                      min={1}
+                      value={selectedBlock.width}
+                      onChange={(e) => {
+                        const n = clampInt(e.target.value, 1, 99)
+                        updateSelectedBlock((b) => ({ ...b, width: n }))
+                      }}
+                    />
+                  </Field>
+                  <Field label="height">
+                    <input
+                      className="pf-input"
+                      type="number"
+                      min={1}
+                      value={selectedBlock.height}
+                      onChange={(e) => {
+                        const n = clampInt(e.target.value, 1, 99)
+                        updateSelectedBlock((b) => ({ ...b, height: n }))
+                      }}
+                    />
+                  </Field>
+                </div>
+
+                <div className="pf-row" style={{ gap: 10 }}>
+                  <Field label="hue">
+                    <input
+                      className="pf-input"
+                      type="number"
+                      step={0.01}
+                      value={selectedBlock.hue}
+                      onChange={(e) => {
+                        const n = clampNum(e.target.value, 0, 1)
+                        updateSelectedBlock((b) => ({ ...b, hue: n }))
+                      }}
+                    />
+                  </Field>
+                  <Field label="sat">
+                    <input
+                      className="pf-input"
+                      type="number"
+                      step={0.01}
+                      value={selectedBlock.sat}
+                      onChange={(e) => {
+                        const n = clampNum(e.target.value, 0, 1)
+                        updateSelectedBlock((b) => ({ ...b, sat: n }))
+                      }}
+                    />
+                  </Field>
+                  <Field label="val">
+                    <input
+                      className="pf-input"
+                      type="number"
+                      step={0.01}
+                      value={selectedBlock.val}
+                      onChange={(e) => {
+                        const n = clampNum(e.target.value, 0, 1)
+                        updateSelectedBlock((b) => ({ ...b, val: n }))
+                      }}
+                    />
+                  </Field>
+                </div>
+
+                <Field label="zoomfactor">
+                  <input
+                    className="pf-input"
+                    type="number"
+                    step={0.1}
+                    value={selectedBlock.zoomfactor}
+                    onChange={(e) => {
+                      const n = clampNum(e.target.value, 0.1, 10)
+                      updateSelectedBlock((b) => ({ ...b, zoomfactor: n }))
+                    }}
+                  />
+                </Field>
+
+                <div className="pf-row pf-wrap" style={{ marginTop: 8 }}>
+                  <Toggle
+                    label="fillwithwalls"
+                    checked={selectedBlock.fillwithwalls === 1}
+                    onChange={(v) => updateSelectedBlock((b) => ({ ...b, fillwithwalls: v ? 1 : 0 }))}
+                  />
+                  <Toggle
+                    label="player"
+                    checked={selectedBlock.player === 1}
+                    onChange={(v) => updateSelectedBlock((b) => ({ ...b, player: v ? 1 : 0 }))}
+                  />
+                  <Toggle
+                    label="possessable"
+                    checked={selectedBlock.possessable === 1}
+                    onChange={(v) => updateSelectedBlock((b) => ({ ...b, possessable: v ? 1 : 0 }))}
+                  />
+                  <Toggle
+                    label="fliph"
+                    checked={selectedBlock.fliph === 1}
+                    onChange={(v) => updateSelectedBlock((b) => ({ ...b, fliph: v ? 1 : 0 }))}
+                  />
+                  <Toggle
+                    label="floatinspace"
+                    checked={selectedBlock.floatinspace === 1}
+                    onChange={(v) => updateSelectedBlock((b) => ({ ...b, floatinspace: v ? 1 : 0 }))}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        </aside>
       </div>
+
+      {showHelp && (
+        <div className="pf-modalOverlay" role="dialog" aria-modal="true">
+          <div
+            className="pf-modalBackdrop"
+            onClick={() => setShowHelp(false)}
+            aria-hidden="true"
+          />
+          <div className="pf-modal">
+            <div className="pf-row" style={{ marginBottom: 8 }}>
+              <div className="pf-section-title" style={{ marginBottom: 0 }}>
+                Help
+              </div>
+              <div className="pf-spacer" />
+              <button className="pf-btn" onClick={() => setShowHelp(false)}>
+                Close
+              </button>
+            </div>
+            <pre className="pf-pre">{HELP}</pre>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
 
 function clamp(n: number, a: number, b: number): number {
+  return Math.max(a, Math.min(b, n))
+}
+
+function clampInt(raw: string, a: number, b: number): number {
+  const n = Number(raw)
+  if (!Number.isFinite(n)) return a
+  return Math.max(a, Math.min(b, Math.trunc(n)))
+}
+
+function clampNum(raw: string, a: number, b: number): number {
+  const n = Number(raw)
+  if (!Number.isFinite(n)) return a
   return Math.max(a, Math.min(b, n))
 }
 
@@ -457,4 +615,22 @@ function pathEq(a: number[], b: number[]): boolean {
   if (a.length !== b.length) return false
   for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false
   return true
+}
+
+function Field(props: { label: string; children: React.ReactNode }) {
+  return (
+    <label className="pf-field">
+      <div className="pf-label">{props.label}</div>
+      {props.children}
+    </label>
+  )
+}
+
+function Toggle(props: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <label className="pf-toggle">
+      <input type="checkbox" checked={props.checked} onChange={(e) => props.onChange(e.target.checked)} />
+      <span>{props.label}</span>
+    </label>
+  )
 }
